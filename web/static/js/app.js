@@ -19,3 +19,8 @@ import "deps/phoenix_html/web/static/js/phoenix_html"
 // paths "./socket" or full ones "web/static/js/socket".
 
 // import socket from "./socket"
+
+// connect with our Elm main module `Elm.Dash`
+var elmDiv = document.getElementById('elm-main')
+    , elmApp = Elm.embed(Elm.Dash, elmDiv);
+    
