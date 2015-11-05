@@ -2,7 +2,7 @@ module Dash where
 
 import StartApp.Simple exposing (start)
 
-import Html exposing (ul, li, text, button, div)
+import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 
