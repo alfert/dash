@@ -1,6 +1,6 @@
 module Dash where
 
-  import Html
+import Html
 
-  main =
+main =
     Html.text "Hello from Elm"
