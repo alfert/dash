@@ -18,9 +18,25 @@ import "deps/phoenix_html/web/static/js/phoenix_html"
 // Local files can be imported directly using relative
 // paths "./socket" or full ones "web/static/js/socket".
 
-// import socket from "./socket"
+import socket from "./socket"
 
 // connect with our Elm main module `Elm.Dash`
 var elmDiv = document.getElementById('elm-main')
     , elmApp = Elm.embed(Elm.Dash, elmDiv);
-    
+
+// join channel and set initial state
+let channel = socket.channel("counters:lobby", {})
+channel.join()
+  .receive("ok", resp => console.log("joined counter:first", resp)) 
+  		//elmApp.ports.seatLists.send(seats))
+  .receive("error", resp => console.log("Unable to join", resp))
+/*
+// listen for seat requests
+elmApp.ports.seatRequests.subscribe(seat => {
+  channel.push("request_seat", seat)
+         .receive("error", payload => console.log(payload.message))
+})
+
+// listen for broadcasts
+channel.on("updated", seat => elmApp.ports.seatUpdates.send(seat))
+*/
