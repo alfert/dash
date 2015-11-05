@@ -2,7 +2,7 @@ defmodule Dash.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  # channel "rooms:*", Dash.RoomChannel
+  channel "counters:*", Dash.CounterChannel
 
   ## Transports
   transport :websocket, Phoenix.Transports.WebSocket
