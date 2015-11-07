@@ -11,6 +11,8 @@ defmodule Dash do
       supervisor(Dash.Endpoint, []),
       # Start the Ecto repository
       worker(Dash.Repo, []),
+      # the counter
+      worker(Dash.Counter, [])
       # Here you could define other workers and supervisors as children
       # worker(Dash.Worker, [arg1, arg2, arg3]),
     ]

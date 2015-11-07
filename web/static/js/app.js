@@ -18,9 +18,40 @@ import "deps/phoenix_html/web/static/js/phoenix_html"
 // Local files can be imported directly using relative
 // paths "./socket" or full ones "web/static/js/socket".
 
-// import socket from "./socket"
+import socket from "./socket"
 
 // connect with our Elm main module `Elm.Dash`
 var elmDiv = document.getElementById('elm-main')
-    , elmApp = Elm.embed(Elm.Dash, elmDiv);
-    
+	, initialPortState = {getCounterValue: 0}
+    , elmApp = Elm.embed(Elm.Dash, elmDiv, initialPortState);
+
+// join channel and set initial state
+let channel = socket.channel("counters:lobby", {})
+channel.join()
+  .receive("ok", counter => {
+  	console.log("Send 'getCounterValue' the counter value: ", counter);
+  	console.log("the ports are: ", elmApp.ports);
+  	// elmApp.ports.getCounterValue.send(counter);
+	})
+  .receive("error", resp => console.log("Unable to join", resp));
+
+// Send a new value to phoenix
+elmApp.ports.sendValuePort.subscribe(value => {
+	console.log("send value to phoenix: ", value);
+  channel.push("set_value", value)
+         .receive("error", payload => console.log(payload.message))
+});
+channel.on("getCounterValue", counter => {
+	console.log("getCounterValue from Phoenix: ", counter);
+	elmApp.ports.getCounterValue.send(counter.value)}
+	);
+/*
+// listen for seat requests
+elmApp.ports.seatRequests.subscribe(seat => {
+  channel.push("request_seat", seat)
+         .receive("error", payload => console.log(payload.message))
+})
+
+// listen for broadcasts
+channel.on("updated", seat => elmApp.ports.seatUpdates.send(seat))
+*/
