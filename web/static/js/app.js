@@ -22,14 +22,29 @@ import socket from "./socket"
 
 // connect with our Elm main module `Elm.Dash`
 var elmDiv = document.getElementById('elm-main')
-    , elmApp = Elm.embed(Elm.Dash, elmDiv);
+	, initialPortState = {getCounterValue: 0}
+    , elmApp = Elm.embed(Elm.Dash, elmDiv, initialPortState);
 
 // join channel and set initial state
 let channel = socket.channel("counters:lobby", {})
 channel.join()
-  .receive("ok", resp => console.log("joined counter:first", resp)) 
-  		//elmApp.ports.seatLists.send(seats))
-  .receive("error", resp => console.log("Unable to join", resp))
+  .receive("ok", counter => {
+  	console.log("Send 'getCounterValue' the counter value: ", counter);
+  	console.log("the ports are: ", elmApp.ports);
+  	// elmApp.ports.getCounterValue.send(counter);
+	})
+  .receive("error", resp => console.log("Unable to join", resp));
+
+// Send a new value to phoenix
+elmApp.ports.sendValuePort.subscribe(value => {
+	console.log("send value to phoenix: ", value);
+  channel.push("set_value", value)
+         .receive("error", payload => console.log(payload.message))
+});
+channel.on("getCounterValue", counter => {
+	console.log("getCounterValue from Phoenix: ", counter);
+	elmApp.ports.getCounterValue.send(counter.value)}
+	);
 /*
 // listen for seat requests
 elmApp.ports.seatRequests.subscribe(seat => {
