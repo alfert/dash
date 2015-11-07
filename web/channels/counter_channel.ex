@@ -1,9 +1,13 @@
 defmodule Dash.CounterChannel do
   use Dash.Web, :channel
+  require Logger
+
+  alias Dash.Counter
+  @counter "first"
 
   def join("counters:lobby", payload, socket) do
     if authorized?(payload) do
-      {:ok, socket}
+      {:ok, Dash.Counter.get(@counter), socket}
     else
       {:error, %{reason: "unauthorized"}}
     end
@@ -17,8 +21,10 @@ defmodule Dash.CounterChannel do
 
   # It is also common to receive messages from the client and
   # broadcast to everyone in the current topic (counters:lobby).
-  def handle_in("shout", payload, socket) do
-    broadcast socket, "shout", payload
+  def handle_in("set_value", inc_value, socket) do#
+    Logger.info "got message: <set_value, #{inspect inc_value}>"
+    value = Counter.inc(@counter, inc_value)
+    broadcast socket, "getCounterValue", %{value: value}
     {:noreply, socket}
   end
 
