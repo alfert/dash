@@ -25,9 +25,9 @@ update : Action -> Model -> (Model, Effects Action)
 update action model = 
     case action of
         NoOp -> (model, Effects.none) -- do nothing
-        Reset -> (0, send_value_to_server 0) -- should send something to the channel (= Effect)
-        Inc -> (model + 1, send_value_to_server (model + 1))
-        NewValue value -> (value, Effects.none)
+        Reset -> (0, send_value_to_server 0) -- send 0 to the channel (= Effect)
+        Inc -> (model + 1, send_value_to_server (model + 1)) -- send the new model value
+        NewValue value -> (value, Effects.none) -- receive a new value and store it as model value
 
 -- EFFECTS
 
