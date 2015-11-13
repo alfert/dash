@@ -45,13 +45,3 @@ channel.on("getCounterValue", counter => {
 	console.log("getCounterValue from Phoenix: ", counter);
 	elmApp.ports.getCounterValue.send(counter.value)}
 	);
-/*
-// listen for seat requests
-elmApp.ports.seatRequests.subscribe(seat => {
-  channel.push("request_seat", seat)
-         .receive("error", payload => console.log(payload.message))
-})
-
-// listen for broadcasts
-channel.on("updated", seat => elmApp.ports.seatUpdates.send(seat))
-*/
