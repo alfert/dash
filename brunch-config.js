@@ -42,6 +42,7 @@ exports.config = {
       "deps/phoenix/web/static",
       "deps/phoenix_html/web/static",
       "web/static",
+      "web/static/vendor",
       "test/static",
       "web/elm/Dash.elm"
     ],
