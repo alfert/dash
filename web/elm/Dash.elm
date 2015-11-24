@@ -17,11 +17,11 @@ init =
 -- MODEL
 type alias Model = (CounterType, History)
 type alias CounterType = Int
-type alias History = List Int
+type alias History = List CounterType
 
 -- UPDATE
 
-type Action = NoOp | Reset | Inc | NewValue Int
+type Action = NoOp | Reset | Inc | NewValue CounterType
 
 update : Action -> Model -> (Model, Effects Action)
 update action model = 
@@ -47,23 +47,29 @@ set_model value (_, xs) = (value, value :: xs)
 
 publish_model : Model -> Effects Action
 publish_model (x, history) =
-  Signal.send sendValueMailBox.address x
-    |> Effects.task
-    |> Effects.map (always NoOp)
+  let 
+    eff s = s |> Effects.task |> Effects.map (always NoOp)
+  in
+    Effects.batch [
+      Signal.send sendValueMailBox.address x |> eff,
+      Signal.send sendHistoryMailBox.address history |> eff 
+    ]
+    
 
 -- PORTS
 
 -- Write something towards phoenix
-port sendValuePort : Signal Int
+port sendValuePort : Signal CounterType
 port sendValuePort = 
     sendValueMailBox.signal 
 
 -- Get something from phoenix
-port getCounterValue : Signal Int
+port getCounterValue : Signal CounterType
 -- port getCounterValue = Signal.constant 0
 
 -- Send the current history to D3 time series
--- port 
+port sendHistoryPort : Signal History
+port sendHistoryPort = sendHistoryMailBox.signal
 
 -- SIGNALS
 setCounterAction: Signal Action
@@ -72,9 +78,13 @@ setCounterAction = Signal.map NewValue getCounterValue
 incomingActions : Signal Action
 incomingActions = setCounterAction
 
-sendValueMailBox : Signal.Mailbox Int
+sendValueMailBox : Signal.Mailbox CounterType
 sendValueMailBox =
   Signal.mailbox (0) -- initial value!?
+
+sendHistoryMailBox : Signal.Mailbox History
+sendHistoryMailBox =
+  Signal.mailbox ([]) -- initial value!
 
 -- VIEW
 view : Signal.Address Action -> Model -> Html.Html
@@ -84,6 +94,7 @@ view address model =
     , div [ countStyle ] [ text (toString model) ]
     , button [ onClick address Inc ] [ text "+" ]
     , p [id "counterChart"] []
+    , p [id "elmChart"] []
     ]
 countStyle : Html.Attribute 
 countStyle = class "form.button"
