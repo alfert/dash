@@ -37,12 +37,19 @@ channel.join()
 	})
   .receive("error", resp => console.log("Unable to join", resp));
 
+// elm ports
 // Send a new value to phoenix
 elmApp.ports.sendValuePort.subscribe(value => {
 	console.log("send value to phoenix: ", value);
   channel.push("set_value", value)
          .receive("error", payload => console.log(payload.message))
 });
+// receive a new model history from Elm
+elmApp.ports.sendHistoryPort.subscribe(history => {
+  console.log("got history from Elm: ", history);
+  
+});
+// get a counter value and send it to Elm
 channel.on("getCounterValue", counter => {
 	console.log("getCounterValue from Phoenix: ", counter);
 	elmApp.ports.getCounterValue.send(counter.value)}
