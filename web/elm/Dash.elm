@@ -3,6 +3,7 @@ module Dash where
 import StartApp exposing (App)
 import Effects exposing (Effects, Never)
 import Task exposing (Task)
+import Time exposing (Time)
 
 import Html exposing (..)
 import Html.Attributes exposing (class, id)
@@ -16,30 +17,36 @@ init =
 
 -- MODEL
 type alias Model = (CounterType, History)
-type alias CounterType = Int
+-- The counter holds the value and the current time stamp
+type alias CounterType = {date: Time, value: Int}
 type alias History = List CounterType
 
 -- UPDATE
 
-type Action = NoOp | Reset | Inc | NewValue CounterType
+type Action = NoOp | Reset | Inc Time | NewValue CounterType
 
 update : Action -> Model -> (Model, Effects Action)
 update action model = 
     case action of
         NoOp -> (model, Effects.none) -- do nothing
         Reset -> (reset_model, publish_model reset_model) -- send 0 to the channel (= Effect)
-        Inc -> let m = inc_model model 
+        Inc t -> let m = inc_model t model 
           in (m, publish_model m) -- send the new model value
         NewValue value -> let m = set_model value model 
           in (m, Effects.none) -- receive a new value and store it as model value
 
 reset_model : Model
-reset_model = (0, [0])
+reset_model = 
+  let m = {value = 0, date = 0 * Time.millisecond} 
+  in (m, [m])
 
-inc_model : Model -> Model
-inc_model (x, xs) = (x+1, (x+1) :: xs)
+inc_model : Time -> Model -> Model
+inc_model t ( x, xs) = 
+  let count = {date = t, value = x.value + 1}
+  in
+    (count, count :: xs)
 
-set_model : Int -> Model -> Model
+set_model : CounterType -> Model -> Model
 set_model value (_, xs) = (value, value :: xs)
 
 
@@ -80,7 +87,8 @@ incomingActions = setCounterAction
 
 sendValueMailBox : Signal.Mailbox CounterType
 sendValueMailBox =
-  Signal.mailbox (0) -- initial value!?
+  let init = { date = 0 * Time.millisecond, value = 0}
+  in Signal.mailbox (init) -- initial value!
 
 sendHistoryMailBox : Signal.Mailbox History
 sendHistoryMailBox =
@@ -92,14 +100,17 @@ view address model =
  div []
     [ button [ onClick address Reset ] [ text "Reset" ]
     , div [ countStyle ] [ text (toString model) ]
-    , button [ onClick address Inc ] [ text "+" ]
+--   , button [ onClick address (add_time Inc) ] [ text "+" ]
     , p [id "counterChart"] []
     , p [id "elmChart"] []
     ]
 countStyle : Html.Attribute 
 countStyle = class "form.button"
 
-
+add_time : a -> Signal (Time, a)
+add_time s = (Signal.constant s) 
+  |> Time.timestamp 
+--  |> Signal.map \x -> Inc x
 
 -- WIRING
 
@@ -112,7 +123,7 @@ app =
     , inputs = [incomingActions]
     }
 
-
+{-- --}
 main : Signal Html
 main =
   app.html
