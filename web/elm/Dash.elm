@@ -10,6 +10,18 @@ import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
 
 
+{-- 
+  What to do here properly: 
+    * design a module for a time series chart, addressable, such 
+      that incoming data can be sent to. ==> Data comes in from phoenix via sockets
+    * design a larger frame, where charts can be embedded
+    * design an even larger frame with menu etc. 
+  What not to do: 
+    * Mess around with times etc in Elm since time is bound to signals.
+--}
+
+
+
 init : (Model, Effects Action)
 init =
   (reset_model, Effects.none)
@@ -100,7 +112,7 @@ view address model =
  div []
     [ button [ onClick address Reset ] [ text "Reset" ]
     , div [ countStyle ] [ text (toString model) ]
---   , button [ onClick address (add_time Inc) ] [ text "+" ]
+    , button [ onClick address (Inc 0) ] [ text "+" ]
     , p [id "counterChart"] []
     , p [id "elmChart"] []
     ]
