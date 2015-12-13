@@ -84,7 +84,6 @@ port sendValuePort =
 
 -- Get something from phoenix
 port getCounterValue : Signal CounterType
--- port getCounterValue = Signal.constant 0
 
 -- Send the current history to D3 time series
 port sendHistoryPort : Signal History
