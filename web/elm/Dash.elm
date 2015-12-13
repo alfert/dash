@@ -119,11 +119,6 @@ view address model =
 countStyle : Html.Attribute 
 countStyle = class "form.button"
 
-add_time : a -> Signal (Time, a)
-add_time s = (Signal.constant s) 
-  |> Time.timestamp 
---  |> Signal.map \x -> Inc x
-
 -- WIRING
 
 app : App Model
