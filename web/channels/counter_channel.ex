@@ -6,6 +6,7 @@ defmodule Dash.CounterChannel do
   @counter "first"
 
   def join("counters:lobby", payload, socket) do
+    Logger.info "joing counters:lobby from socket #{inspect socket}"
     if authorized?(payload) do
       {:ok, Dash.Counter.get(@counter), socket}
     else

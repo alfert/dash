@@ -81,7 +81,7 @@ defmodule Dash.Counter do
 	@doc "Publishes a counter to the Phoenix Channel `counter:first`"
 	@spec publish_counter(t) :: t
 	def publish_counter(%__MODULE__{} = counter) do
-		:ok = Dash.Endpoint.broadcast! "counter:lobby", "getCounterValue", counter
+		:ok = Dash.Endpoint.broadcast! "counters:lobby", "getCounterValue", counter
 		Logger.info "publishes counter: #{inspect counter}"
 		counter
 	end

@@ -28,6 +28,7 @@ var elmDiv = document.getElementById('elm-main')
     , elmApp = Elm.embed(Elm.Dash, elmDiv, initialPortState);
 
 // join channel and set initial state
+console.log("Connect to counters:lobby")
 let channel = socket.channel("counters:lobby", {})
 channel.join()
   .receive("ok", counter => {
