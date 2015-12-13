@@ -24,7 +24,7 @@ import sample_graph from "./diagram";
 
 // connect with our Elm main module `Elm.Dash`
 var elmDiv = document.getElementById('elm-main')
-	, initialPortState = {getCounterValue: 0}
+	, initialPortState = {getCounterValue: {date: 0, value: 0}}
     , elmApp = Elm.embed(Elm.Dash, elmDiv, initialPortState);
 
 // join channel and set initial state
@@ -34,7 +34,7 @@ channel.join()
   .receive("ok", counter => {
   	console.log("Send 'getCounterValue' the counter value: ", counter);
   	console.log("the ports are: ", elmApp.ports);
-  	// elmApp.ports.getCounterValue.send(counter);
+  	elmApp.ports.getCounterValue.send(counter);
 	})
   .receive("error", resp => console.log("Unable to join", resp));
 
@@ -53,7 +53,7 @@ elmApp.ports.sendHistoryPort.subscribe(history => {
 // get a counter value and send it to Elm
 channel.on("getCounterValue", counter => {
 	console.log("getCounterValue from Phoenix: ", counter);
-	elmApp.ports.getCounterValue.send(counter.value)}
+	elmApp.ports.getCounterValue.send(counter)}
 	);
 
 // Graphics
