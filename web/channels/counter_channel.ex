@@ -33,6 +33,7 @@ defmodule Dash.CounterChannel do
   # to the client. The default implementation is just to push it
   # downstream but one could filter or change the event.
   def handle_out(event, payload, socket) do
+    Logger.info "handle out: event=#{inspect event}, payload=#{inspect payload}"
     push socket, event, payload
     {:noreply, socket}
   end
