@@ -44,7 +44,8 @@ exports.config = {
       "web/static",
       "web/static/vendor",
       "test/static",
-      "web/elm/Dash.elm"
+      "web/elm/Dash.elm",
+      "web/elm/Diagram.elm"
     ],
 
     // Where to compile files to
@@ -55,7 +56,7 @@ exports.config = {
   plugins: {
     elmBrunch: {
       elmFolder: 'web/elm',
-      mainModules: ['Dash.elm'],
+      mainModules: ['Dash.elm', 'Diagram.elm'],
       outputFolder: '../static/vendor'
     },
     babel: {
