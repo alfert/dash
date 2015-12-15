@@ -9,6 +9,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
 
+import Dash.Diagram exposing (..)
 
 {-- 
   What to do here properly: 
@@ -68,10 +69,12 @@ publish_model : Model -> Effects Action
 publish_model (x, history) =
   let 
     eff s = s |> Effects.task |> Effects.map (always NoOp)
+    diagram = Dash.Diagram.simple_histogram history "#elmChart"
   in
     Effects.batch [
       Signal.send sendValueMailBox.address x |> eff,
-      Signal.send sendHistoryMailBox.address history |> eff 
+      Signal.send sendHistoryMailBox.address history |> eff,
+      Signal.send diagram_stream_mailbox.address diagram |> eff 
     ]
     
 
