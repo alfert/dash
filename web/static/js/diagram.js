@@ -1,5 +1,12 @@
 // Time series diagram using the metricgraphics 2.7
 
+// install the callback to the data_graphic function via an Elm port
+function set_diagram_port(port) {
+  port.subscribe(graph_options => {
+    return MG.data_graphic(graph_options);
+  });
+};
+
 function data_generator(length)  {
   var d = new Date();
   var v = 100000;
@@ -29,4 +36,4 @@ function sample_graph(){
   });
 };
 
-export default sample_graph
+export {sample_graph, set_diagram_port};
