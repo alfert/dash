@@ -20,7 +20,7 @@ import "deps/phoenix_html/web/static/js/phoenix_html";
 
 import socket from "./socket";
 // import D3 from "web/static/vendor/d3.js";
-import sample_graph from "./diagram";
+import {sample_graph, set_diagram_port} from "./diagram";
 
 // connect with our Elm main module `Elm.Dash`
 var elmDiv = document.getElementById('elm-main')
@@ -58,3 +58,4 @@ channel.on("getCounterValue", counter => {
 
 // Graphics
 sample_graph();
+set_diagram_port(elmApp.ports.data_graph_port);
