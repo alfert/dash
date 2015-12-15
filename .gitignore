@@ -25,6 +25,6 @@ erl_crash.dump
 
 /web/elm/elm-stuff
 /web/static/vendor/dash.js
+/web/static/vendor/diagram.js
 /web/static/vendor/elm-stuff
 /web/static/vendor/elm-package.json
-
