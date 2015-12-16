@@ -72,7 +72,7 @@ publish_model : Model -> Effects Action
 publish_model (x, history) =
   let 
     eff s = s |> Effects.task |> Effects.map (always NoOp)
-    diagram = Debug.log "publish model: " Dash.Diagram.simple_histogram history "#elmChart"
+    diagram = Debug.log "publish model: " (Dash.Diagram.simple_histogram history "#elmChart")
   in
     Effects.batch [
       Signal.send sendValueMailBox.address x |> eff,
@@ -85,7 +85,7 @@ show_diagram : Model -> Effects Action
 show_diagram (x, history) =
   let 
     eff s = s |> Effects.task |> Effects.map (always NoOp)
-    diagram = Debug.log "publish model: " Dash.Diagram.simple_histogram history "#elmChart"
+    diagram = Debug.log "show_diagram: " (Dash.Diagram.simple_histogram history "#elmChart")
   in
     Effects.batch [
       Signal.send diagram_stream_mailbox.address diagram |> eff 
@@ -104,6 +104,10 @@ port getCounterValue : Signal CounterType
 -- Send the current history to D3 time series
 port sendHistoryPort : Signal History
 port sendHistoryPort = sendHistoryMailBox.signal
+
+-- Output Ports => results in drawing graph of diagram_stream via JS 
+port data_graph_port : Signal Simple_Options
+port data_graph_port = diagram_stream_mailbox.signal
 
 -- SIGNALS
 setCounterAction: Signal Action
