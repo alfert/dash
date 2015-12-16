@@ -56,7 +56,7 @@ exports.config = {
   plugins: {
     elmBrunch: {
       elmFolder: 'web/elm',
-      mainModules: ['Dash.elm', 'Diagram.elm'],
+      mainModules: ['Dash.elm'],
       outputFolder: '../static/vendor'
     },
     babel: {

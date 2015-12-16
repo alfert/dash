@@ -46,7 +46,7 @@ update action model =
         Inc t -> let m = inc_model t model 
           in (m, publish_model m) -- send the new model value
         NewValue value -> let m = set_model value model 
-          in (m, Effects.none) -- receive a new value and store it as model value
+          in (m, show_diagram m) -- receive a new value and store it as model value
 
 reset_model : Model
 reset_model = 
@@ -60,16 +60,19 @@ inc_model t ( x, xs) =
     (count, count :: xs)
 
 set_model : CounterType -> Model -> Model
-set_model value (_, xs) = (value, value :: xs)
+set_model value (_, xs) = Debug.log "set_model: " (value, value :: xs)
 
 
 -- EFFECTS
+
+------ Problem: The history data is not sent to the port. 
+------          Nothing appears in the console.log
 
 publish_model : Model -> Effects Action
 publish_model (x, history) =
   let 
     eff s = s |> Effects.task |> Effects.map (always NoOp)
-    diagram = Dash.Diagram.simple_histogram history "#elmChart"
+    diagram = Debug.log "publish model: " Dash.Diagram.simple_histogram history "#elmChart"
   in
     Effects.batch [
       Signal.send sendValueMailBox.address x |> eff,
@@ -77,6 +80,16 @@ publish_model (x, history) =
       Signal.send diagram_stream_mailbox.address diagram |> eff 
     ]
     
+-- send the model to draw a diagram
+show_diagram : Model -> Effects Action
+show_diagram (x, history) =
+  let 
+    eff s = s |> Effects.task |> Effects.map (always NoOp)
+    diagram = Debug.log "publish model: " Dash.Diagram.simple_histogram history "#elmChart"
+  in
+    Effects.batch [
+      Signal.send diagram_stream_mailbox.address diagram |> eff 
+    ]
 
 -- PORTS
 
