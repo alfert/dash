@@ -57,5 +57,5 @@ channel.on("getCounterValue", counter => {
 	);
 
 // Graphics
-sample_graph();
+// sample_graph();
 set_diagram_port(elmApp.ports.data_graph_port);
