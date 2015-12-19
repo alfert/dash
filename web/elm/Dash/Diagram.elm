@@ -10,8 +10,6 @@ import List exposing (..)
 type alias Target = String
 type alias DataPoint = {date: Time, value: Int}
 type alias History = List DataPoint
--- extensible record 
--- type alias Graph_Options = { a | data : History}
 
 -- options for simple graphs
 type alias Simple_Options = {
@@ -31,13 +29,14 @@ type alias Simple_Options = {
 simple_histogram : History -> Target -> Simple_Options
 simple_histogram hist_data the_target = 
     { 
-        data = hist_data, 
+        data = hist_data 
+            |> filter (\x -> x.date > 0),
         target = the_target, 
         title = "Simple Elm Histogram",
         width = 600,
         height = 200,
         right = 40,
-        min_x = min_gt_zero hist_data
+        min_x = Nothing -- min_gt_zero hist_data
     }
 
 min_gt_zero: History -> Maybe Float
