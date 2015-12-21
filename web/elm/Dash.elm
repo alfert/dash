@@ -29,67 +29,35 @@ init =
 
 
 -- MODEL
-type alias Model = (CounterType, History)
+type alias Model = Dash.Diagram.Model
 -- The counter holds the value and the current time stamp
 type alias CounterType = {date: Time, value: Int}
 type alias History = List CounterType
 
 -- UPDATE
 
-type Action = NoOp | Reset | Inc Time | NewValue CounterType
+type Action 
+  = NoOp 
+  | Reset 
+  | SubMessage Dash.Diagram.Action
 
 update : Action -> Model -> (Model, Effects Action)
 update action model = 
     case action of
         NoOp -> (model, Effects.none) -- do nothing
-        Reset -> (reset_model, publish_model reset_model) -- send 0 to the channel (= Effect)
-        Inc t -> let m = inc_model t model 
-          in (m, publish_model m) -- send the new model value
-        NewValue value -> let m = set_model value model 
-          in (m, show_diagram m) -- receive a new value and store it as model value
+        Reset -> 
+          (reset_model, Effects.map SubMessage (Dash.Diagram.show_diagram reset_model)) -- send 0 to the channel (= Effect)
+        SubMessage diag_act -> 
+          let
+            (m, a) = Dash.Diagram.update (diag_act) model
+          in
+            (m, Effects.map SubMessage a)
+
 
 reset_model : Model
-reset_model = 
-  let m = {value = 0, date = 0 * Time.millisecond} 
-  in (m, [m])
-
-inc_model : Time -> Model -> Model
-inc_model t ( x, xs) = 
-  let count = {date = t, value = x.value + 1}
-  in
-    (count, count :: xs)
-
-set_model : CounterType -> Model -> Model
-set_model value (_, xs) = Debug.log "set_model: " (value, value :: xs)
-
+reset_model = Dash.Diagram.init_model
 
 -- EFFECTS
-
------- Problem: The history data is not sent to the port. 
-------          Nothing appears in the console.log
-
-publish_model : Model -> Effects Action
-publish_model (x, history) =
-  let 
-    eff s = s |> Effects.task |> Effects.map (always NoOp)
-    diagram = Debug.log "publish model: " (Dash.Diagram.simple_histogram history "#elmChart")
-  in
-    Effects.batch [
-      Signal.send sendValueMailBox.address x |> eff,
-      Signal.send sendHistoryMailBox.address history |> eff,
-      Signal.send diagram_stream_mailbox.address diagram |> eff 
-    ]
-    
--- send the model to draw a diagram
-show_diagram : Model -> Effects Action
-show_diagram (x, history) =
-  let 
-    eff s = s |> Effects.task |> Effects.map (always NoOp)
-    diagram = Debug.log "show_diagram: " (Dash.Diagram.simple_histogram history "#elmChart")
-  in
-    Effects.batch [
-      Signal.send diagram_stream_mailbox.address diagram |> eff 
-    ]
 
 -- PORTS
 
@@ -111,7 +79,8 @@ port data_graph_port = diagram_stream_mailbox.signal
 
 -- SIGNALS
 setCounterAction: Signal Action
-setCounterAction = Signal.map NewValue getCounterValue
+setCounterAction = 
+  Signal.map (\v -> SubMessage (Dash.Diagram.NewValue v)) getCounterValue
 
 incomingActions : Signal Action
 incomingActions = setCounterAction
@@ -129,14 +98,18 @@ sendHistoryMailBox =
 view : Signal.Address Action -> Model -> Html.Html
 view address model =
  div []
-    [ button [ onClick address Reset ] [ text "Reset" ]
-    , div [ countStyle ] [ text (toString model) ]
-    , button [ onClick address (Inc 0) ] [ text "+" ]
-    , p [id "counterChart"] []
-    , p [id "elmChart"] []
-    ]
-countStyle : Html.Attribute 
-countStyle = class "form.button"
+    [ h2 [] [(text "The Big Elm Chart - Single Chart variant")]
+    , (diagView address model)
+      ]
+
+diagView : Signal.Address Action -> Model -> Html.Html
+diagView address model = 
+  let 
+    wrap : Dash.Diagram.Action -> Action
+    wrap = \x -> SubMessage x
+  in
+    Dash.Diagram.view_histogram "elmChart" (Signal.forwardTo address wrap) model
+
 
 -- WIRING
 
