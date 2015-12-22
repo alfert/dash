@@ -40,16 +40,14 @@ channel.join()
 
 // elm ports
 // Send a new value to phoenix
+// ==> This is a blue-print for interaction. Will eventually become
+//     an interface to create or subscribe to new counters
 elmApp.ports.sendValuePort.subscribe(value => {
 	console.log("send value to phoenix: ", value);
   channel.push("set_value", value)
          .receive("error", payload => console.log(payload.message))
 });
-// receive a new model history from Elm
-elmApp.ports.sendHistoryPort.subscribe(history => {
-  console.log("got history from Elm: ", history);
-  
-});
+
 // get a counter value and send it to Elm
 channel.on("getCounterValue", counter => {
 	console.log("getCounterValue from Phoenix: ", counter);
@@ -57,5 +55,4 @@ channel.on("getCounterValue", counter => {
 	);
 
 // Graphics
-// sample_graph();
 set_diagram_port(elmApp.ports.data_graph_port);

@@ -69,10 +69,6 @@ port sendValuePort =
 -- Get something from phoenix
 port getCounterValue : Signal CounterType
 
--- Send the current history to D3 time series
-port sendHistoryPort : Signal History
-port sendHistoryPort = sendHistoryMailBox.signal
-
 -- Output Ports => results in drawing graph of diagram_stream via JS 
 port data_graph_port : Signal Simple_Options
 port data_graph_port = diagram_stream_mailbox.signal
