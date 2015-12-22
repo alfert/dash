@@ -1,4 +1,5 @@
-module Dash.Diagram where
+module Dash.Diagram 
+    (DataPoint, Model, Action, update, init_model, view_histogram, new_value) where
 
 import Time exposing (Time)
 import List exposing (..)
@@ -28,6 +29,9 @@ type alias Simple_Options = {
     , right : Int
     , min_x : Maybe Float
 }
+
+new_value : DataPoint -> Action
+new_value dp = NewValue dp
 
 ----------------------------------------------------------------
 -- Update the model

@@ -45,14 +45,15 @@ update : Action -> Model -> (Model, Effects Action)
 update action model = 
     case action of
         NoOp -> (model, Effects.none) -- do nothing
-        Reset -> 
-          (reset_model, Effects.map SubMessage (Dash.Diagram.show_diagram reset_model)) -- send 0 to the channel (= Effect)
-        SubMessage diag_act -> 
-          let
-            (m, a) = Dash.Diagram.update (diag_act) model
-          in
-            (m, Effects.map SubMessage a)
-
+        Reset -> update_single_diagram NoOp reset_model
+        SubMessage diag_act -> update_single_diagram diag_act model
+          
+update_single_diagram : Dash.Diagram.Action -> Model -> (Model, Effects Action)
+update_single_diagram diag_act model = 
+    let
+      (m, a) = Dash.Diagram.update (diag_act) model
+    in
+      (m, Effects.map SubMessage a)
 
 reset_model : Model
 reset_model = Dash.Diagram.init_model "elmChart"
@@ -76,7 +77,7 @@ port data_graph_port = diagram_stream_mailbox.signal
 -- SIGNALS
 setCounterAction: Signal Action
 setCounterAction = 
-  Signal.map (\v -> SubMessage (Dash.Diagram.NewValue v)) getCounterValue
+  Signal.map (\v -> SubMessage (Dash.Diagram.new_value v)) getCounterValue
 
 incomingActions : Signal Action
 incomingActions = setCounterAction
@@ -85,11 +86,7 @@ sendValueMailBox : Signal.Mailbox CounterType
 sendValueMailBox =
   let init = { date = 0 * Time.millisecond, value = 0}
   in Signal.mailbox (init) -- initial value!
-
-sendHistoryMailBox : Signal.Mailbox History
-sendHistoryMailBox =
-  Signal.mailbox ([]) -- initial value!
-
+    
 -- VIEW
 view : Signal.Address Action -> Model -> Html.Html
 view address model =
