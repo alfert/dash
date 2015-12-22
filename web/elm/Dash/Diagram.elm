@@ -14,7 +14,8 @@ type alias Target = String
 type alias DataPoint = {date: Time, value: Int}
 type alias History = List DataPoint
 
-type alias Model = History
+-- Each diagram has an id (its target) and the history of data points
+type alias Model = {id: Target, history: History}
 type Action = NoOp | NewValue DataPoint
 
 -- options for simple graphs
@@ -41,30 +42,30 @@ update action model =
 
 -- puts a new datapoint on top of the list.
 set_model : DataPoint -> Model -> Model
-set_model value xs = Debug.log "set_model: " value :: xs
+set_model data m = Debug.log "set_model: " { m | history = data :: m.history}
 
 -- The initial state of the model is the empty list.
-init_model : Model
-init_model = []
+init_model : Target -> Model
+init_model new_id = {id = new_id, history = []}
 
 
 ----------------------------------------------------------------
 -- View the histogram
 ----------------------------------------------------------------
-view_histogram : Target -> Signal.Address Action -> Model -> Html.Html 
-view_histogram diagram_id address model = 
-    p [id diagram_id] []
+view_histogram : Signal.Address Action -> Model -> Html.Html 
+view_histogram address model = 
+    p [id model.id] []
 
 -- simple_histogram
 -- call this function with the Model history and
 -- send the result of this as an effect to the mailbox
 -- similar to sending the values to the forms
-simple_histogram : History -> Target -> Simple_Options
-simple_histogram hist_data the_target = 
+simple_histogram : Model -> Simple_Options
+simple_histogram m  = 
     { 
-        data = hist_data 
+        data = m.history
             |> filter (\x -> x.date > 0),
-        target = the_target, 
+        target = "#" ++ m.id, 
         title = "Simple Elm Histogram",
         width = 600,
         height = 200,
@@ -84,10 +85,10 @@ min_gt_zero hist =
 ----------------------------------------------------------------
 -- send the model to draw a diagram
 show_diagram : Model -> Effects Action
-show_diagram history =
+show_diagram m =
   let 
     eff s = s |> Effects.task |> Effects.map (always NoOp)
-    diagram = Debug.log "show_diagram: " (simple_histogram history "#elmChart")
+    diagram = Debug.log "show_diagram: " (simple_histogram m)
   in
     Effects.batch [
       Signal.send diagram_stream_mailbox.address diagram |> eff 

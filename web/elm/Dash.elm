@@ -55,7 +55,7 @@ update action model =
 
 
 reset_model : Model
-reset_model = Dash.Diagram.init_model
+reset_model = Dash.Diagram.init_model "elmChart"
 
 -- EFFECTS
 
@@ -108,7 +108,7 @@ diagView address model =
     wrap : Dash.Diagram.Action -> Action
     wrap = \x -> SubMessage x
   in
-    Dash.Diagram.view_histogram "elmChart" (Signal.forwardTo address wrap) model
+    Dash.Diagram.view_histogram (Signal.forwardTo address wrap) model
 
 
 -- WIRING
