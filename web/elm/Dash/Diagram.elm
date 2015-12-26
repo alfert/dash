@@ -6,6 +6,7 @@ import List exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (class, id)
 import Effects exposing (Effects, Never)
+import Json.Encode as JS
 
 ----------------------------------------------------------------
 -- TYPES
@@ -29,6 +30,30 @@ type alias Simple_Options = {
     , right : Int
     , min_x : Maybe Float
 }
+
+toJson : Simple_Options -> JS.Value
+toJson opts = 
+    JS.object [
+         ("data", history_to_json opts.data)
+        ,("target", JS.string opts.target)
+        ,("title", JS.string opts.title)
+        ,("width", JS.int opts.width)
+        ,("height", JS.int opts.height)
+        ,("right", JS.int opts.right)
+        ,("min_x", maybe_to_json opts.min_x)
+    ]
+
+history_to_json : History -> JS.Value
+history_to_json h = JS.list (map dp_to_json h)
+dp_to_json : DataPoint -> JS.Value
+dp_to_json dp = JS.object [
+    ("date", JS.float dp.date), 
+    ("value", JS.int dp.value)
+    ]
+maybe_to_json : Maybe Float -> JS.Value
+maybe_to_json x = case x of
+    Just v -> JS.float v
+    Nothing -> JS.null
 
 new_value : DataPoint -> Action
 new_value dp = NewValue dp
@@ -95,14 +120,14 @@ show_diagram m =
     diagram = Debug.log "show_diagram: " (simple_histogram m)
   in
     Effects.batch [
-      Signal.send diagram_stream_mailbox.address diagram |> eff 
+      (Signal.send diagram_stream_mailbox.address (diagram |> toJson)) |> eff 
     ]
 
 
--- diagram_stream 
-diagram_stream_mailbox : Signal.Mailbox Simple_Options
+-- diagram_stream mailbox with initial value
+diagram_stream_mailbox : Signal.Mailbox JS.Value
 diagram_stream_mailbox = 
-    Signal.mailbox({data = [], title ="", target = "#",
-        min_x = Nothing,
-        width = 0, height = 0, right = 0})     -- with initial value 
-
+    init_model "" 
+        |> simple_histogram 
+        |> toJson 
+        |> Signal.mailbox

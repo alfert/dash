@@ -10,6 +10,7 @@ import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
 
 import Dash.Diagram exposing (..)
+import Json.Encode exposing (Value)
 
 {-- 
   What to do here properly: 
@@ -71,7 +72,7 @@ port sendValuePort =
 port getCounterValue : Signal CounterType
 
 -- Output Ports => results in drawing graph of diagram_stream via JS 
-port data_graph_port : Signal Simple_Options
+port data_graph_port : Signal Json.Encode.Value
 port data_graph_port = diagram_stream_mailbox.signal
 
 -- SIGNALS
