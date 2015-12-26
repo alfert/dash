@@ -32,7 +32,7 @@ defmodule Dash.Counter do
 	@doc "Reset or creates a new counter"
 	def reset(counter) do
 		Agent.update(__MODULE__, fn map -> 
-			map |> Dict.put(counter, set_value(0) |> publish_counter) end)
+			map |> Dict.put(counter, set_value(0) |> publish_counter(counter)) end)
 		0
 	end
 
@@ -64,7 +64,7 @@ defmodule Dash.Counter do
 		Logger.info "old value is: #{inspect v}"
 		new_map = map |> Dict.update(counter, value, 
 			fn %__MODULE__{value: v} -> 
-				set_value(v + value) |> publish_counter 
+				set_value(v + value) |> publish_counter(counter)
 			 	any -> Logger.error "old value for #{inspect counter} is #{inspect any}"
 			 		any
 			end)
@@ -79,11 +79,12 @@ defmodule Dash.Counter do
 	end
 
 	@doc "Publishes a counter to the Phoenix Channel `counter:first`"
-	@spec publish_counter(t) :: t
-	def publish_counter(%__MODULE__{} = counter) do
-		:ok = Dash.Endpoint.broadcast! "counters:lobby", "getCounterValue", counter
-		Logger.info "publishes counter: #{inspect counter}"
-		counter
+	@spec publish_counter(t, String) :: t
+	def publish_counter(%__MODULE__{} = value, counter) do
+		c = %{id: counter, counter: value}
+		:ok = Dash.Endpoint.broadcast! "counters:lobby", "getCounterValue", c
+		Logger.info "publishes counter: #{inspect c}"
+		value
 	end
 
 	def arb(enum) do
