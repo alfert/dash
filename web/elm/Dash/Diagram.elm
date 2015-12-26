@@ -1,5 +1,6 @@
 module Dash.Diagram 
-    (DataPoint, Model, Action, update, init_model, view_histogram, new_value) where
+    (DataPoint, Model, Action, reset, update, init_model, view_histogram, new_value,
+        diagram_stream_mailbox) where
 
 import Time exposing (Time)
 import List exposing (..)
@@ -18,7 +19,7 @@ type alias History = List DataPoint
 
 -- Each diagram has an id (its target) and the history of data points
 type alias Model = {id: Target, history: History}
-type Action = NoOp | NewValue DataPoint
+type Action = NoOp | Reset | NewValue DataPoint
 
 -- options for simple graphs
 type alias Simple_Options = {
@@ -65,6 +66,7 @@ update : Action -> Model -> (Model, Effects Action)
 update action model = 
     case action of
         NoOp -> (model, Effects.none) -- do nothing
+        Reset -> (model, show_diagram model) -- set a (empty?) model and show it
         NewValue value -> let m = set_model value model 
           in (m, show_diagram m) -- receive a new value and store it as model value
 
@@ -77,6 +79,9 @@ set_model data m = Debug.log "set_model: " { m | history = data :: m.history}
 init_model : Target -> Model
 init_model new_id = {id = new_id, history = []}
 
+-- 
+reset : Model -> (Model, Effects Action)
+reset model = update Reset model
 
 ----------------------------------------------------------------
 -- View the histogram

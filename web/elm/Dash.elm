@@ -46,13 +46,20 @@ update : Action -> Model -> (Model, Effects Action)
 update action model = 
     case action of
         NoOp -> (model, Effects.none) -- do nothing
-        Reset -> update_single_diagram NoOp reset_model
+        Reset -> reset_single_diagram reset_model
         SubMessage diag_act -> update_single_diagram diag_act model
           
 update_single_diagram : Dash.Diagram.Action -> Model -> (Model, Effects Action)
 update_single_diagram diag_act model = 
     let
       (m, a) = Dash.Diagram.update (diag_act) model
+    in
+      (m, Effects.map SubMessage a)
+
+reset_single_diagram : Model -> (Model, Effects Action)
+reset_single_diagram model = 
+  let
+      (m, a) = Dash.Diagram.reset model
     in
       (m, Effects.map SubMessage a)
 
@@ -87,7 +94,7 @@ sendValueMailBox : Signal.Mailbox CounterType
 sendValueMailBox =
   let init = { date = 0 * Time.millisecond, value = 0}
   in Signal.mailbox (init) -- initial value!
-    
+
 -- VIEW
 view : Signal.Address Action -> Model -> Html.Html
 view address model =
