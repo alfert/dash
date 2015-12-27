@@ -24,7 +24,8 @@ import {sample_graph, set_diagram_port} from "./diagram";
 
 // connect with our Elm main module `Elm.Dash`
 var elmDiv = document.getElementById('elm-main')
-	, initialPortState = {getCounterValue: {date: 0, value: 0}}
+	, initialPortState = 
+      {getCounterValue: {id: "unknown", counter: {date: 0, value: 0}}}
     , elmApp = Elm.embed(Elm.Dash, elmDiv, initialPortState);
 
 // join channel and set initial state
