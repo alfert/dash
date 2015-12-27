@@ -21,6 +21,10 @@ import Json.Encode exposing (Value)
     * design a larger frame, where charts can be embedded. The model is a dictionary,
       mapping ids (or targets) to the diagram model.
       ==> DONE
+    * setting the title (and other features) of a diagram when creating the 
+      initial model from Dash.elm
+    * Refactor Dash.elm such that a library module for handling diagrams exists
+      and a main module with ports, signals and wirings to connect to Elixir.
     * design an even larger frame with menu etc. 
   What not to do: 
     * Mess around with times etc in Elm since time is bound to signals.
