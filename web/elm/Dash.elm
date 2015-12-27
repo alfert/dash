@@ -80,11 +80,11 @@ reset_model =
   in Dict.singleton id (Dash.Diagram.init_model id)
 
 -- expects that the key exists. there is no runtime error,
--- but an empty diagram is returned, if the key is not in the model
+-- but an empty diagram with new key is returned, if the key is not in the model
 get_diagram: Id -> Model -> Dash.Diagram.Model
 get_diagram id model = 
   let
-    emptyDiagram = Dash.Diagram.init_model "Unknown Identifier for Chart"
+    emptyDiagram = Dash.Diagram.init_model id -- "Unknown Identifier for Chart"
   in 
     Maybe.withDefault emptyDiagram (Dict.get id model)
 
