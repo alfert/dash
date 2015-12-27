@@ -18,12 +18,14 @@ type alias DataPoint = {date: Time, value: Int}
 type alias History = List DataPoint
 
 -- Each diagram has an id (its target) and the history of data points
-type alias Model = {id: Target, history: History}
+-- type alias Model = {id: Target, history: History}
 type Action = NoOp | Reset | NewValue DataPoint
 
 -- options for simple graphs
-type alias Simple_Options = {
-      data : History
+type alias Simple_Options_X = Model
+type alias Model = {
+      id: Target
+    , data : History
     , target : Target
     , title : String
     , width : Int
@@ -32,7 +34,8 @@ type alias Simple_Options = {
     , min_x : Maybe Float
 }
 
-toJson : Simple_Options -> JS.Value
+--toJson : Simple_Options_X -> JS.Value
+toJson : Model -> JS.Value
 toJson opts = 
     JS.object [
          ("data", history_to_json opts.data)
@@ -73,11 +76,20 @@ update action model =
 
 -- puts a new datapoint on top of the list.
 set_model : DataPoint -> Model -> Model
-set_model data m = Debug.log "set_model: " { m | history = data :: m.history}
+set_model data m = Debug.log "set_model: " { m | data = data :: m.data}
 
 -- The initial state of the model is the empty list.
-init_model : Target -> Model
-init_model new_id = {id = new_id, history = []}
+init_model : Target -> String -> Model
+init_model new_id new_title = {
+    id = new_id,
+    data = [],
+    target = "#" ++ new_id, 
+    title = new_title,
+    width = 600,
+    height = 200,
+    right = 40,
+    min_x = Nothing -- min_gt_zero hist_data
+    }
 
 -- 
 reset : Model -> (Model, Effects Action)
@@ -94,16 +106,17 @@ view_histogram address model =
 -- call this function with the Model history and
 -- send the result of this as an effect to the mailbox
 -- similar to sending the values to the forms
-simple_histogram : Model -> Simple_Options
+simple_histogram : Model -> Simple_Options_X
 simple_histogram m  = 
     { 
-        data = m.history
+        data = m.data
             |> filter (\x -> x.date > 0),
         target = "#" ++ m.id, 
         title = "Simple Elm Histogram",
         width = 600,
         height = 200,
         right = 40,
+        id = m.id,
         min_x = Nothing -- min_gt_zero hist_data
     }
 
@@ -132,7 +145,7 @@ show_diagram m =
 -- diagram_stream mailbox with initial value
 diagram_stream_mailbox : Signal.Mailbox JS.Value
 diagram_stream_mailbox = 
-    init_model "" 
+    init_model "" ""
         |> simple_histogram 
         |> toJson 
         |> Signal.mailbox
