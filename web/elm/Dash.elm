@@ -20,6 +20,7 @@ import Json.Encode exposing (Value)
       ==> DONE
     * design a larger frame, where charts can be embedded. The model is a dictionary,
       mapping ids (or targets) to the diagram model.
+      ==> DONE
     * design an even larger frame with menu etc. 
   What not to do: 
     * Mess around with times etc in Elm since time is bound to signals.
