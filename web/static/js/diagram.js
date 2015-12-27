@@ -10,7 +10,13 @@ function set_diagram_port(port) {
     graph_options.data = d;
     console.log("converted data");
     console.log(graph_options.data);
-    return MG.data_graphic(graph_options);
+    try {
+      return MG.data_graphic(graph_options);
+    } catch (e) {
+      console.warn("Got Exception inside MG.data_graphic");
+      console.warn(e);
+      return true;
+    };
   });
 };
 

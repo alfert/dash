@@ -4,18 +4,23 @@ import StartApp exposing (App)
 import Effects exposing (Effects, Never)
 import Task exposing (Task)
 import Time exposing (Time)
+import Dict exposing (Dict)
 
 import Html exposing (..)
 import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
 
 import Dash.Diagram exposing (..)
+import Json.Encode exposing (Value)
 
 {-- 
   What to do here properly: 
     * design a module for a time series chart, addressable, such 
       that incoming data can be sent to. ==> Data comes in from phoenix via sockets
-    * design a larger frame, where charts can be embedded
+      ==> DONE
+    * design a larger frame, where charts can be embedded. The model is a dictionary,
+      mapping ids (or targets) to the diagram model.
+      ==> DONE
     * design an even larger frame with menu etc. 
   What not to do: 
     * Mess around with times etc in Elm since time is bound to signals.
@@ -29,67 +34,62 @@ init =
 
 
 -- MODEL
-type alias Model = (CounterType, History)
+type alias Id = String 
+type alias Model = Dict.Dict Id Dash.Diagram.Model
+
+-- the counter update message as sent from Phoenix
+type alias CounterMsg = {id: Id, counter: CounterType}
 -- The counter holds the value and the current time stamp
 type alias CounterType = {date: Time, value: Int}
 type alias History = List CounterType
 
 -- UPDATE
 
-type Action = NoOp | Reset | Inc Time | NewValue CounterType
+type Action 
+  = NoOp 
+  | Reset Id
+  | SubMessage Id Dash.Diagram.Action
 
 update : Action -> Model -> (Model, Effects Action)
 update action model = 
     case action of
         NoOp -> (model, Effects.none) -- do nothing
-        Reset -> (reset_model, publish_model reset_model) -- send 0 to the channel (= Effect)
-        Inc t -> let m = inc_model t model 
-          in (m, publish_model m) -- send the new model value
-        NewValue value -> let m = set_model value model 
-          in (m, show_diagram m) -- receive a new value and store it as model value
+        Reset id -> reset_single_diagram id reset_model
+        SubMessage id diag_act -> update_single_diagram id diag_act model
+          
+update_single_diagram : Id -> Dash.Diagram.Action -> Model -> (Model, Effects Action)
+update_single_diagram id diag_act model = 
+    let
+      diag = get_diagram id model 
+      (d, a) = Dash.Diagram.update (diag_act) diag
+      m = Dict.update id (\v -> Just d) model
+    in
+      (m, Effects.map (SubMessage id) a)
+
+reset_single_diagram : Id -> Model -> (Model, Effects Action)
+reset_single_diagram id model = 
+  let
+      diag = get_diagram id model
+      (d, a) = Dash.Diagram.reset diag
+      m = Dict.update id (\v -> Just d) model
+    in
+      (m, Effects.map (SubMessage id) a)
 
 reset_model : Model
 reset_model = 
-  let m = {value = 0, date = 0 * Time.millisecond} 
-  in (m, [m])
+  let id = "elmChart" 
+  in Dict.singleton id (Dash.Diagram.init_model id)
 
-inc_model : Time -> Model -> Model
-inc_model t ( x, xs) = 
-  let count = {date = t, value = x.value + 1}
-  in
-    (count, count :: xs)
-
-set_model : CounterType -> Model -> Model
-set_model value (_, xs) = Debug.log "set_model: " (value, value :: xs)
-
+-- expects that the key exists. there is no runtime error,
+-- but an empty diagram with new key is returned, if the key is not in the model
+get_diagram: Id -> Model -> Dash.Diagram.Model
+get_diagram id model = 
+  let
+    emptyDiagram = Dash.Diagram.init_model id -- "Unknown Identifier for Chart"
+  in 
+    Maybe.withDefault emptyDiagram (Dict.get id model)
 
 -- EFFECTS
-
------- Problem: The history data is not sent to the port. 
-------          Nothing appears in the console.log
-
-publish_model : Model -> Effects Action
-publish_model (x, history) =
-  let 
-    eff s = s |> Effects.task |> Effects.map (always NoOp)
-    diagram = Debug.log "publish model: " (Dash.Diagram.simple_histogram history "#elmChart")
-  in
-    Effects.batch [
-      Signal.send sendValueMailBox.address x |> eff,
-      Signal.send sendHistoryMailBox.address history |> eff,
-      Signal.send diagram_stream_mailbox.address diagram |> eff 
-    ]
-    
--- send the model to draw a diagram
-show_diagram : Model -> Effects Action
-show_diagram (x, history) =
-  let 
-    eff s = s |> Effects.task |> Effects.map (always NoOp)
-    diagram = Debug.log "show_diagram: " (Dash.Diagram.simple_histogram history "#elmChart")
-  in
-    Effects.batch [
-      Signal.send diagram_stream_mailbox.address diagram |> eff 
-    ]
 
 -- PORTS
 
@@ -99,19 +99,17 @@ port sendValuePort =
     sendValueMailBox.signal 
 
 -- Get something from phoenix
-port getCounterValue : Signal CounterType
-
--- Send the current history to D3 time series
-port sendHistoryPort : Signal History
-port sendHistoryPort = sendHistoryMailBox.signal
+port getCounterValue : Signal CounterMsg
 
 -- Output Ports => results in drawing graph of diagram_stream via JS 
-port data_graph_port : Signal Simple_Options
+port data_graph_port : Signal Json.Encode.Value
 port data_graph_port = diagram_stream_mailbox.signal
 
 -- SIGNALS
 setCounterAction: Signal Action
-setCounterAction = Signal.map NewValue getCounterValue
+setCounterAction = 
+  Signal.map (\v -> 
+      SubMessage v.id (Dash.Diagram.new_value v.counter)) getCounterValue
 
 incomingActions : Signal Action
 incomingActions = setCounterAction
@@ -121,22 +119,29 @@ sendValueMailBox =
   let init = { date = 0 * Time.millisecond, value = 0}
   in Signal.mailbox (init) -- initial value!
 
-sendHistoryMailBox : Signal.Mailbox History
-sendHistoryMailBox =
-  Signal.mailbox ([]) -- initial value!
-
 -- VIEW
 view : Signal.Address Action -> Model -> Html.Html
 view address model =
  div []
-    [ button [ onClick address Reset ] [ text "Reset" ]
-    , div [ countStyle ] [ text (toString model) ]
-    , button [ onClick address (Inc 0) ] [ text "+" ]
-    , p [id "counterChart"] []
-    , p [id "elmChart"] []
+    [ h2 [] [(text "The Big Elm Chart - List Chart variant")]
+    , div [] (all_diags address model)
     ]
-countStyle : Html.Attribute 
-countStyle = class "form.button"
+
+all_diags : Signal.Address Action ->Model -> List Html.Html
+all_diags address model = 
+  Dict.toList model 
+    |> List.map (\entry -> 
+      let (id, v) = entry
+      in diagView address id v)
+
+diagView : Signal.Address Action -> Id -> Dash.Diagram.Model -> Html.Html
+diagView address id model = 
+  let 
+    wrap : Dash.Diagram.Action -> Action
+    wrap = \x -> SubMessage id x
+  in
+    Dash.Diagram.view_histogram (Signal.forwardTo address wrap) model
+
 
 -- WIRING
 
