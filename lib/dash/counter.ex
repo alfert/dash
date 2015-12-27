@@ -15,7 +15,9 @@ defmodule Dash.Counter do
 	updates every seconds
 	"""
 	def start_link() do
-		dict = HashDict.new |> Dict.put("first", set_value(0))
+		dict = HashDict.new 
+			|> Dict.put("first", set_value(0))
+			|> Dict.put("second", set_value(0))
 		res = Agent.start_link(fn -> dict end, 
 			name: __MODULE__)
 		timer = :timer.apply_interval(1_000, __MODULE__, :timed_update, [])
