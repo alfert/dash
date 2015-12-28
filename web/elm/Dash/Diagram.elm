@@ -16,6 +16,7 @@ import Json.Encode as JS
 type alias Target = String
 type alias DataPoint = {date: Time, value: Int}
 type alias History = List DataPoint
+type alias DiagOptions = List (String, JS.Value)
 
 -- Each diagram has an id (its target) and the history of data points
 -- type alias Model = {id: Target, history: History}
@@ -28,6 +29,7 @@ type alias Model = {
     , data : History
     , target : Target
     , title : String
+    , opts : DiagOptions
     , width : Int
     , height : Int
     , right : Int
@@ -37,7 +39,8 @@ type alias Model = {
 --toJson : Simple_Options_X -> JS.Value
 toJson : Model -> JS.Value
 toJson opts = 
-    JS.object [
+    let
+        fields = [
          ("data", history_to_json opts.data)
         ,("target", JS.string opts.target)
         ,("title", JS.string opts.title)
@@ -45,7 +48,9 @@ toJson opts =
         ,("height", JS.int opts.height)
         ,("right", JS.int opts.right)
         ,("min_x", maybe_to_json opts.min_x)
-    ]
+    ] 
+    in 
+        JS.object (fields ++ opts.opts)
 
 history_to_json : History -> JS.Value
 history_to_json h = JS.list (map dp_to_json h)
@@ -85,6 +90,12 @@ init_model new_id new_title = {
     data = [],
     target = "#" ++ new_id, 
     title = new_title,
+    opts = [ 
+         ("interpolate", JS.string "basic")
+        ,("area", JS.bool True) 
+        ,("x_sort", JS.bool False)
+        ,("european_clock", JS.bool True)
+    ],
     width = 600,
     height = 200,
     right = 40,
@@ -107,19 +118,8 @@ view_histogram address model =
 -- send the result of this as an effect to the mailbox
 -- similar to sending the values to the forms
 simple_histogram : Model -> Simple_Options_X
-simple_histogram m  = 
-    { 
-        data = m.data
-            |> filter (\x -> x.date > 0),
-        target = "#" ++ m.id, 
-        title = "Simple Elm Histogram",
-        width = 600,
-        height = 200,
-        right = 40,
-        id = m.id,
-        min_x = Nothing -- min_gt_zero hist_data
-    }
-
+simple_histogram m  = m 
+    
 min_gt_zero: History -> Maybe Float
 min_gt_zero hist = 
     hist 
