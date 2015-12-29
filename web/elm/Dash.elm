@@ -91,9 +91,16 @@ reset_model =
 get_diagram: Id -> Model -> Dash.Diagram.Model
 get_diagram id model = 
   let
-    emptyDiagram = Dash.Diagram.init_model id "Unknown Identifier for Chart"
+    emptyDiagram = Dash.Diagram.init_model id (diagram_title id)
   in 
     Maybe.withDefault emptyDiagram (Dict.get id model)
+
+diagram_title : Id -> String
+diagram_title id = case id of
+  "first" -> "Diagram No 1: Counter First"
+  "second" -> "Diagram No 2: Counter Second"
+  _ ->  "Unknown Identifier for Chart"
+
 
 -- EFFECTS
 
