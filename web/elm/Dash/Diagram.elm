@@ -1,9 +1,11 @@
 module Dash.Diagram 
-    (DataPoint, Model, Action, reset, update, init_model, view_histogram, new_value,
+    (DataPoint, Model, Action, reset, update, init_model, init_model_with_opts,
+        view_histogram, new_value,
         diagram_stream_mailbox) where
 
 import Time exposing (Time)
 import List exposing (..)
+import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (class, id)
 import Effects exposing (Effects, Never)
@@ -30,10 +32,6 @@ type alias Model = {
     , target : Target
     , title : String
     , opts : DiagOptions
-    , width : Int
-    , height : Int
-    , right : Int
-    , min_x : Maybe Float
 }
 
 --toJson : Simple_Options_X -> JS.Value
@@ -44,10 +42,6 @@ toJson opts =
          ("data", history_to_json opts.data)
         ,("target", JS.string opts.target)
         ,("title", JS.string opts.title)
-        ,("width", JS.int opts.width)
-        ,("height", JS.int opts.height)
-        ,("right", JS.int opts.right)
-        ,("min_x", maybe_to_json opts.min_x)
     ] 
     in 
         JS.object (fields ++ opts.opts)
@@ -95,14 +89,32 @@ init_model new_id new_title = {
         ,("area", JS.bool True) 
         ,("x_sort", JS.bool False)
         ,("european_clock", JS.bool True)
-    ],
-    width = 600,
-    height = 200,
-    right = 40,
-    min_x = Nothing -- min_gt_zero hist_data
+        ,("width", JS.int 600)
+        ,("height", JS.int 200)
+        ,("right", JS.int 40)
+        ]
     }
 
--- 
+init_model_with_opts : Target -> String -> DiagOptions -> Model
+init_model_with_opts id title new_opts = 
+    let 
+        m : Model
+        m = init_model id title
+        -- make a dictionary from the model's option list for easier updates
+        d : Dict String JS.Value
+        d = Dict.fromList m.opts
+        -- update the option dictionary
+        apply_opts : (String, JS.Value) -> Dict String JS.Value -> Dict String JS.Value
+        apply_opts = \(key, value) -> \opts -> 
+            Dict.update key (\_ -> Just value ) opts 
+        -- fold all new options into the default options
+        all_opts : Dict String JS.Value
+        -- List.foldl: (a -> b -> b) -> b -> List a -> b
+        all_opts = List.foldl apply_opts d new_opts
+    in 
+        { m | opts = Dict.toList all_opts}
+
+-- reset the to model to the initial values
 reset : Model -> (Model, Effects Action)
 reset model = update Reset model
 
