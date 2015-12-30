@@ -11,7 +11,7 @@ import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
 
 import Dash.Diagram exposing (..)
-import Json.Encode exposing (Value)
+import Json.Encode as JS -- exposing (Value)
 
 {-- 
   What to do here properly: 
@@ -91,7 +91,8 @@ reset_model =
 get_diagram: Id -> Model -> Dash.Diagram.Model
 get_diagram id model = 
   let
-    emptyDiagram = Dash.Diagram.init_model id (diagram_title id)
+    opts = [("y_scale_type", JS.string "linear") ]
+    emptyDiagram = Dash.Diagram.init_model_with_opts id (diagram_title id) opts
   in 
     Maybe.withDefault emptyDiagram (Dict.get id model)
 
@@ -115,7 +116,7 @@ port sendValuePort =
 port getCounterValue : Signal CounterMsg
 
 -- Output Ports => results in drawing graph of diagram_stream via JS 
-port data_graph_port : Signal Json.Encode.Value
+port data_graph_port : Signal JS.Value
 port data_graph_port = diagram_stream_mailbox.signal
 
 -- SIGNALS
