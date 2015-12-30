@@ -25,9 +25,11 @@ function convert_dates(data) {
   console.log("Convert Dates for");
   console.log(data);
   data.forEach(function(d, index, array) {
-    var new_date = new Date(d.date);
-    ds.push({date: new_date, value: d.value});
-  });
+    if (d.date >= 0) {
+        var new_date = new Date(d.date);
+        ds.push({date: new_date, value: d.value});
+      }
+    });
   return ds;
 }
 
