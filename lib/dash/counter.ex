@@ -10,6 +10,8 @@ defmodule Dash.Counter do
 	@typedoc "The struct of a counter"
 	@type t :: %__MODULE__{date: millis, value: integer}
 
+	@counting_interval 1_200 # milliseconds
+	
 	@doc """
 	Start the counter server, creates the counter `first` and starts 
 	updates every seconds
@@ -20,7 +22,8 @@ defmodule Dash.Counter do
 			|> Dict.put("second", set_value(0))
 		res = Agent.start_link(fn -> dict end, 
 			name: __MODULE__)
-		timer = :timer.apply_interval(1_000, __MODULE__, :timed_update, [])
+		timer = :timer.apply_interval(@counting_interval, __MODULE__, 
+					:timed_update, [])
 		Logger.info "Counter first startet: #{inspect res}"
 		Logger.info "Timer for apply_interval is: #{inspect timer}"
 		res
