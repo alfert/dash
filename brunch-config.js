@@ -28,8 +28,6 @@ exports.config = {
           "web/static/vendor/dark.css",
           "web/static/vendor/button-slate.css",
           "web/static/vendor/metricsgraphics-dark.css",
-
-          // ==> Fontgrößen passen nicht für metricsgraphics!
         ]
       }
     },
