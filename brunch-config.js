@@ -21,7 +21,17 @@ exports.config = {
       // }
     },
     stylesheets: {
-      joinTo: "css/app.css"
+      joinTo: "css/app.css",
+      order: {
+        after: [
+          "web/static/vendor/metricsgraphics.css",
+          "web/static/vendor/dark.css",
+          "web/static/vendor/button-slate.css",
+          "web/static/vendor/metricsgraphics-dark.css",
+
+          // ==> Fontgrößen passen nicht für metricsgraphics!
+        ]
+      }
     },
     templates: {
       joinTo: "js/app.js"
