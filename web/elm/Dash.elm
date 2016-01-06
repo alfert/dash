@@ -23,6 +23,7 @@ import Json.Encode as JS -- exposing (Value)
       ==> DONE
     * setting the title (and other features) of a diagram when creating the 
       initial model from Dash.elm
+      ==> DONE
     * Refactor Dash.elm such that a library module for handling diagrams exists
       and a main module with ports, signals and wirings to connect to Elixir.
     * design an even larger frame with menu etc. 
@@ -137,7 +138,7 @@ sendValueMailBox =
 view : Signal.Address Action -> Model -> Html.Html
 view address model =
  div []
-    [ h2 [] [(text "The Big Elm Chart - List Chart variant")]
+    [ h2 [class "chart_title"] [(text "The Big Elm Chart - List Chart variant")]
     , div [] (all_diags address model)
     ]
 
