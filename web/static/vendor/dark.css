@@ -1,0 +1,44 @@
+/* Dark Theme for Dash, mostly taken from the metricgraphics demo page */
+a,
+a:active,
+a:visited {
+    color: #71b4eb;
+}
+
+a:hover {
+    color: #71b4eb;
+}
+
+a.active {
+    color: #fff;
+}
+
+body {
+    background-color: #272727;
+    color: #cfcfcf;
+}
+
+.divider {
+    color: #f1f1f1;
+    opacity: 0.1;
+}
+
+pre {
+    border-left: 2px solid #3b3b3b;
+}
+
+h1 {
+    color: #f1f1f1;
+}
+
+h2.chart_title span {
+    color: #f1f1f1;
+}
+
+li {
+    color: #cfcfcf;
+}
+
+text {
+    fill: #fff;
+}
