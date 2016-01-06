@@ -1,3 +1,4 @@
+
 .mg-active-datapoint {
     fill: black;
     font-size: 0.9rem;
@@ -294,7 +295,6 @@ circle.mg-points-mono {
     stroke: #0000ff;
 }
 
-/* a selected point in a scatterplot */
 .mg-points circle.selected {
     fill-opacity: 1;
     stroke-opacity: 1;
@@ -366,3 +366,4 @@ circle.mg-points-mono {
 .mg-year-marker-small text {
     font-size: 0.6rem;
 }
+*/
