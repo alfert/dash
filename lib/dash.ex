@@ -10,7 +10,7 @@ defmodule Dash do
       # Start the endpoint when the application starts
       supervisor(Dash.Endpoint, []),
       # Start the Ecto repository
-      worker(Dash.Repo, []),
+      # worker(Dash.Repo, []),
       # the counter
       worker(Dash.Counter, [])
       # Here you could define other workers and supervisors as children

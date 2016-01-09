@@ -1,5 +1,5 @@
 defmodule Dash.PageControllerTest do
-  use Dash.ConnCase
+  use Dash.ConnCase, async: true
 
   test "GET /" do
     conn = get conn(), "/"

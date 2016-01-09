@@ -1,5 +1,5 @@
 defmodule Dash.CounterChannelTest do
-  use Dash.ChannelCase
+  use Dash.ChannelCase, async: true
 
   alias Dash.CounterChannel
 
