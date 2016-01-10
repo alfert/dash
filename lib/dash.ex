@@ -12,7 +12,10 @@ defmodule Dash do
       # Start the Ecto repository
       # worker(Dash.Repo, []),
       # the counter
-      worker(Dash.Counter, [])
+      worker(Dash.Counter, []),
+      
+      # the Metrics Server
+      worker(Dash.Metrics, [metrics_name()])
       # Here you could define other workers and supervisors as children
       # worker(Dash.Worker, [arg1, arg2, arg3]),
     ]
@@ -29,4 +32,8 @@ defmodule Dash do
     Dash.Endpoint.config_change(changed, removed)
     :ok
   end
+
+  @doc "Name of the Metrics server"
+  def metrics_name(), do: Dash.Metrics
+ 
 end
