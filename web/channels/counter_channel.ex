@@ -25,7 +25,7 @@ defmodule Dash.CounterChannel do
   def handle_in("set_value", inc_value, socket) do#
     Logger.info "got message: <set_value, #{inspect inc_value}>"
     value = Counter.inc(@counter, inc_value)
-    broadcast socket, "getCounterValue", %{value: value}
+    broadcast socket, "getCounterValue", %{counter: value}
     {:noreply, socket}
   end
 
