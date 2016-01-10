@@ -31,6 +31,7 @@ defmodule Dash.Mixfile do
   # Type `mix help deps` for examples and options.
   defp deps do
     [{:timex, "~> 1.0.0-rc3"},
+     {:elixometer, github: "pinterest/elixometer", tag: "1.0.0"},
      {:phoenix, "~> 1.0.3"},
      {:phoenix_ecto, "~> 1.1"},
      {:postgrex, ">= 0.0.0"},
