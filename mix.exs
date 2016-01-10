@@ -19,6 +19,7 @@ defmodule Dash.Mixfile do
   def application do
     [mod: {Dash, []},
      applications: [:phoenix, :phoenix_html, :cowboy, :logger,
+                    :elixometer,
                     :phoenix_ecto, :postgrex]]
   end
 

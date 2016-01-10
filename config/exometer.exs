@@ -6,7 +6,7 @@ use Mix.Config
 
 app_name         = :dash
 polling_interval = 1_000
-reporter		 = :exometer_report_tty
+reporter		     = Dash.Reporter # :exometer_report_tty
 histogram_stats  = ~w(min max 999 99 97 95 90)a
 histo_opts       = [truncate: false, keep_high: 1_000]
 memory_stats     = ~w(atom binary ets processes total)a
@@ -30,6 +30,7 @@ config :exometer,
 
   reporters:
     [
+      {Dash.Reporter, [target: {:global, Dash.Metrics}]},
       exometer_report_statsd:
       [
         hostname: '192.168.99.100', # 'localhost',
