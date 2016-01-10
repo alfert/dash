@@ -3,6 +3,7 @@ defmodule Dash.UserSocket do
 
   ## Channels
   channel "counters:*", Dash.CounterChannel
+  channel "metrics:lobby", Dash.MetricsChannel
 
   ## Transports
   transport :websocket, Phoenix.Transports.WebSocket
