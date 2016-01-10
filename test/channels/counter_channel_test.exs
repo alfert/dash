@@ -17,8 +17,8 @@ defmodule Dash.CounterChannelTest do
   end
 
   test "shout broadcasts to counters:lobby", %{socket: socket} do
-    push socket, "shout", %{"hello" => "all"}
-    assert_broadcast "shout", %{"hello" => "all"}
+    push socket, "set_value", 5
+    assert_broadcast "getCounterValue", %{counter: %Dash.Counter{value: 5}}
   end
 
   test "broadcasts are pushed to the client", %{socket: socket} do
