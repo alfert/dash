@@ -1,0 +1,10 @@
+language: elixir
+# go container based
+sudo: false
+notifications:
+  recipients:
+    - klaus.alfert@googlemail.com
+elixir:
+  - 1.2.0
+otp_release:
+  - 18.0
